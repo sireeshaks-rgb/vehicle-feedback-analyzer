@@ -1,0 +1,246 @@
+You are upgrading my Transport Passenger Feedback Analyzer into a production-grade multi-tenant AI analytics SaaS platform.
+
+Current stack:
+- Frontend: React + Framer Motion + Recharts
+- Backend: Express
+- Database: PostgreSQL
+- OpenAI integration
+- CSV upload support
+- Public + Admin dashboards
+
+Your task is to enhance it with:
+
+1) Advanced Cohort Analysis
+2) Multi-Organization Support
+3) Role-Based Access Control
+4) Peak vs Off-Peak Analytics
+5) Organization-level intelligence
+6) Maintain all previous analytics + CSV training pipeline
+
+---------------------------------------------------------
+1️⃣ MULTI-ORGANIZATION (MULTI-TENANT ARCHITECTURE)
+---------------------------------------------------------
+
+Add organizations table:
+
+organizations:
+- id
+- name
+- created_at
+
+Modify users table:
+- id
+- name
+- email
+- password_hash
+- role (SUPER_ADMIN, ORG_ADMIN, MANAGER, ANALYST, VIEWER)
+- organization_id (FK)
+
+Modify feedback table:
+- organization_id (FK required)
+- review_text
+- rating
+- sentiment_score
+- issue_category
+- embedding
+- route
+- passenger_type (FIRST_TIME, REGULAR)
+- trip_time_category (PEAK, OFF_PEAK)
+- created_at
+- day_type (WEEKDAY, WEEKEND)
+
+All queries MUST be scoped to organization_id.
+No cross-organization data leakage allowed.
+
+Each organization has:
+- Separate dashboard
+- Separate analytics
+- Separate dataset uploads
+- Separate insight reports
+
+---------------------------------------------------------
+2️⃣ ROLE-BASED ACCESS CONTROL
+---------------------------------------------------------
+
+SUPER_ADMIN:
+- Access all organizations
+- Manage organizations
+- View system-wide analytics
+
+ORG_ADMIN:
+- Upload datasets
+- Manage users within organization
+- View full org analytics
+
+MANAGER:
+- View dashboards
+- View cohort analytics
+- Export reports
+
+ANALYST:
+- Query analytics
+- View charts
+- Use AI insights
+
+VIEWER:
+- Read-only dashboard access
+
+Implement middleware for role validation.
+
+---------------------------------------------------------
+3️⃣ COHORT ANALYSIS ENGINE
+---------------------------------------------------------
+
+Implement cohort breakdown analytics:
+
+A) First-Time vs Regular Passengers
+- Avg rating comparison
+- Sentiment distribution comparison
+- Top issues per group
+- Trend over time per group
+
+B) Weekday vs Weekend
+- Avg rating difference
+- Complaint volume difference
+- Issue type shift analysis
+
+C) Peak vs Off-Peak
+Define:
+- PEAK: 7–10 AM and 4–8 PM
+- OFF_PEAK: all other times
+
+Compute:
+- Rating difference
+- Sentiment difference
+- Issue frequency change
+- Overcrowding spike detection
+
+Create cohort analytics table:
+
+cohort_insights:
+- id
+- organization_id
+- cohort_type (FIRST_TIME_VS_REGULAR, WEEKDAY_VS_WEEKEND, PEAK_VS_OFFPEAK)
+- insights JSONB
+- created_at
+
+These insights must be precomputed after CSV upload.
+
+---------------------------------------------------------
+4️⃣ DASHBOARD ENHANCEMENTS
+---------------------------------------------------------
+
+Public/Org Dashboard must include:
+
+- KPI Cards:
+  - Avg Rating
+  - Total Feedback
+  - Negative %
+  - Emerging Issues
+
+- Sentiment Pie Chart
+- Rating Distribution Chart
+- Sentiment Trend Line
+- Issue Category Bar Chart
+
+NEW: Cohort Comparison Section
+Tabs:
+- First-time vs Regular
+- Weekday vs Weekend
+- Peak vs Off-Peak
+
+Each tab shows:
+- Side-by-side rating comparison
+- Side-by-side sentiment pie
+- Issue comparison bar chart
+- AI-generated explanation summary
+
+Add smooth animated transitions (Framer Motion).
+
+---------------------------------------------------------
+5️⃣ CSV TRAINING PIPELINE (KEEP + EXTEND)
+---------------------------------------------------------
+
+On CSV upload:
+
+1. Validate columns:
+   - review_text
+   - rating
+Optional:
+   - route
+   - timestamp
+   - passenger_type
+
+2. Derive:
+   - day_type from timestamp
+   - trip_time_category from timestamp
+   - sentiment_score
+   - issue_category
+   - embedding
+
+3. Store all structured data.
+
+4. Automatically compute:
+   - Overall dataset insights
+   - Cohort insights
+   - Route breakdown
+   - Emerging issue detection
+   - Peak congestion correlation
+
+Store structured results in dataset_insights and cohort_insights.
+
+---------------------------------------------------------
+6️⃣ INTELLIGENT ALERT SYSTEM
+---------------------------------------------------------
+
+Generate alerts per organization:
+
+- Sentiment drop > 15% week-over-week
+- Peak-hour negative spike
+- Regular passenger dissatisfaction increase
+- Weekend service decline
+- Specific route crisis
+
+Display alert banners on dashboard.
+
+---------------------------------------------------------
+7️⃣ AI INTERPRETATION LAYER
+---------------------------------------------------------
+
+When user asks:
+"Why are ratings low during peak hours?"
+
+System must:
+1. Query structured cohort analytics
+2. Retrieve peak vs off-peak metrics
+3. Use GPT only to explain findings
+
+Do NOT regenerate analytics from scratch.
+Do NOT rely solely on GPT summaries.
+
+---------------------------------------------------------
+8️⃣ ENTERPRISE FEATURES
+---------------------------------------------------------
+
+- Organization-level PDF export
+- Cohort comparison export
+- Dataset comparison (Month vs Month)
+- Scheduled weekly reports
+- Audit logs for admin actions
+
+---------------------------------------------------------
+GOAL
+---------------------------------------------------------
+
+Transform this into a scalable AI-powered transport intelligence SaaS platform with:
+
+- True multi-tenancy
+- Secure role isolation
+- Structured analytics engine
+- Cohort intelligence
+- Peak vs off-peak analysis
+- AI-enhanced explanations
+- Production-ready architecture
+
+This must not be a simple GPT wrapper.
+Analytics must be database-driven and persisted.
