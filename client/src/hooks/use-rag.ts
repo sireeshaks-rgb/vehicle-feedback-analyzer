@@ -6,10 +6,13 @@ export function useRagQuery() {
   return useMutation({
     mutationFn: async (data: QueryRequest) => {
       const validated = api.rag.query.input.parse(data);
-      
+
       const res = await fetch(api.rag.query.path, {
         method: api.rag.query.method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        },
         body: JSON.stringify(validated),
       });
 

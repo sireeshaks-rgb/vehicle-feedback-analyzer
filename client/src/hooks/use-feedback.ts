@@ -1,31 +1,130 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
-import { getAuthToken } from "./use-auth";
+
+export function useSubmitFeedback() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(api.feedback.submit.path, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit feedback");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["analytics-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["transport-analytics"] });
+    }
+  });
+}
 
 export function useUploadFeedback() {
   return useMutation({
     mutationFn: async (file: File) => {
-      const token = getAuthToken();
-      if (!token) throw new Error("Not authenticated");
-
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(api.feedback.upload.path, {
-        method: api.feedback.upload.method,
+      const response = await fetch(api.feedback.upload.path, {
+        method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
         },
         body: formData,
       });
 
-      if (!res.ok) {
-        if (res.status === 401) throw new Error("Unauthorized - please log in again");
-        if (res.status === 400) throw new Error("Invalid CSV format");
+      if (!response.ok) {
         throw new Error("Failed to upload feedback");
       }
 
-      return api.feedback.upload.responses[200].parse(await res.json());
+      return response.json();
+    },
+  });
+}
+
+export function useCohortAnalytics() {
+  return useQuery({
+    queryKey: ["cohort-analytics"],
+    queryFn: async () => {
+      const response = await fetch(api.analytics.cohorts.path, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch cohort analytics");
+      return response.json();
+    }
+  });
+}
+
+export function useAnalyticsSummary() {
+  return useQuery({
+    queryKey: ["analytics-summary"],
+    queryFn: async () => {
+      const response = await fetch(api.analytics.summary.path, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch summary");
+      return response.json();
+    }
+  });
+}
+
+export function useTransportAnalytics(mode: string) {
+  return useQuery({
+    queryKey: ["transport-analytics", mode],
+    queryFn: async () => {
+      const path = api.analytics.transport.path.replace(":mode", mode);
+      const response = await fetch(path, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch transport analytics");
+      return response.json();
+    },
+    enabled: !!mode
+  });
+}
+
+export function useFeedbackList() {
+  return useQuery({
+    queryKey: ["feedback-list"],
+    queryFn: async () => {
+      const response = await fetch(api.feedback.list.path, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch feedback list");
+      return response.json();
+    }
+  });
+}
+
+export function useAnalyzeSingle() {
+  return useMutation({
+    mutationFn: async (feedbackId: string) => {
+      const response = await fetch(api.rag.analyzeSingle.path, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+        },
+        body: JSON.stringify({ feedbackId }),
+      });
+      if (!response.ok) throw new Error("Failed to analyze feedback");
+      return response.json();
     }
   });
 }

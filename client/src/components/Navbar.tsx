@@ -5,10 +5,10 @@ import { useAuth } from "@/hooks/use-auth";
 
 export function Navbar() {
   const [location] = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className="sticky top-0 z-50 w-full glass border-b border-border/50"
@@ -24,29 +24,46 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-6">
-          <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
-            <span className="flex items-center gap-2">
-              <BarChart2 className="w-4 h-4" /> Dashboard
-            </span>
-          </Link>
-          
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <>
-              <Link href="/admin" className={`text-sm font-medium transition-colors hover:text-primary ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Link href="/passenger" className={`text-sm font-medium transition-colors hover:text-primary ${location === '/passenger' ? 'text-primary' : 'text-muted-foreground'}`}>
                 <span className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4" /> Admin
+                  <BarChart2 className="w-4 h-4" /> Feedback
                 </span>
               </Link>
-              <button 
-                onClick={logout}
-                className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" /> Logout
-              </button>
+
+              {(user?.role === "ADMIN" || user?.role === "ORG_ADMIN" || user?.role === "SUPER_ADMIN") && (
+                <Link href="/admin" className={`text-sm font-medium transition-colors hover:text-primary ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4" /> Admin
+                  </span>
+                </Link>
+              )}
+
+              <div className="h-6 w-px bg-border" />
+
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col items-end">
+                  <span className="text-sm font-bold text-foreground leading-none">{user?.email.split('@')[0]}</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter opacity-70">{user?.role}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    window.location.href = "/auth";
+                  }}
+                  className="w-10 h-10 rounded-xl bg-secondary hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all flex items-center justify-center"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
             </>
-          ) : (
-            <Link href="/admin/auth" className="text-sm font-medium transition-colors text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg">
-              Admin Login
+          )}
+
+          {!isAuthenticated && location !== "/auth" && (
+            <Link href="/auth" className="text-sm font-medium transition-colors text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg font-bold">
+              Sign In
             </Link>
           )}
         </div>

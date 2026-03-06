@@ -10,12 +10,24 @@ export const removeAuthToken = () => localStorage.removeItem("auth_token");
 export function useAuth() {
   const queryClient = useQueryClient();
 
-  // Simulated query just to keep React state aware of auth status
-  const { data: isAuthenticated } = useQuery({
-    queryKey: ["auth_status"],
-    queryFn: () => !!getAuthToken(),
-    initialData: !!getAuthToken(),
+  // Real user query
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["/api/auth/me"],
+    queryFn: async () => {
+      const token = getAuthToken();
+      if (!token) return null;
+      const res = await fetch(api.auth.me.path, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        removeAuthToken();
+        return null;
+      }
+      return await res.json();
+    },
   });
+
+  const isAuthenticated = !!user;
 
   const loginMutation = useMutation({
     mutationFn: async (data: AuthRequest) => {
@@ -25,18 +37,18 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validated),
       });
-      
+
       if (!res.ok) {
-        if (res.status === 401) throw new Error("Invalid credentials");
-        throw new Error("Login failed");
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Invalid email or password");
       }
-      
+
       const result = api.auth.login.responses[200].parse(await res.json());
       setAuthToken(result.token);
       return result;
     },
     onSuccess: () => {
-      queryClient.setQueryData(["auth_status"], true);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     }
   });
 
@@ -48,27 +60,29 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validated),
       });
-      
+
       if (!res.ok) {
-        if (res.status === 400) throw new Error("Validation or user exists error");
-        throw new Error("Registration failed");
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Registration failed");
       }
-      
+
       const result = api.auth.register.responses[201].parse(await res.json());
       setAuthToken(result.token);
       return result;
     },
     onSuccess: () => {
-      queryClient.setQueryData(["auth_status"], true);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     }
   });
 
   const logout = () => {
     removeAuthToken();
-    queryClient.setQueryData(["auth_status"], false);
+    queryClient.setQueryData(["/api/auth/me"], null);
   };
 
   return {
+    user,
+    isLoading,
     isAuthenticated,
     login: loginMutation,
     register: registerMutation,

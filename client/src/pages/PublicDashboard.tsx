@@ -1,122 +1,113 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Sparkles, Loader2 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { ResultsDisplay } from "@/components/ResultsDisplay";
-import { useRagQuery } from "@/hooks/use-rag";
-import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import { Sparkles, FileDown } from "lucide-react";
+import { KPICards } from "@/components/KPICards";
+import { CohortAnalysis } from "@/components/CohortAnalysis";
+import { AlertBanner } from "@/components/AlertBanner";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 export function PublicDashboard() {
-  const [query, setQuery] = useState("");
-  const { mutate: executeQuery, isPending, data } = useRagQuery();
-  const { toast } = useToast();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    executeQuery({ question: query }, {
-      onError: (err) => {
-        toast({
-          title: "Analysis Failed",
-          description: err.message,
-          variant: "destructive"
-        });
-      }
-    });
+  const handleExport = () => {
+    window.print();
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Decorative background blobs */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 mix-blend-multiply pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px] -z-10 mix-blend-multiply pointer-events-none" />
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-white dark:bg-slate-950 pb-32">
+      {/* Premium Hero Section */}
+      <section className="relative h-[600px] flex items-center justify-center overflow-hidden mb-20">
+        <div className="absolute inset-0 bg-mesh opacity-40 dark:opacity-60 pointer-events-none" />
 
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col items-center">
-        
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-center max-w-3xl mx-auto mb-12"
+        {/* Floating 3D Background Assets */}
+        <motion.div
+          animate={{ y: [0, -20, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-[10%] w-64 h-64 grayscale opacity-20 dark:opacity-30 blur-sm mix-blend-overlay rotate-12 pointer-events-none"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
-            <Sparkles className="w-4 h-4" /> AI-Powered Analysis
-          </div>
-          <h1 className="text-4xl md:text-6xl font-display font-extrabold text-foreground leading-tight mb-6">
-            Understand your passengers in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">seconds</span>.
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground">
-            Ask any question about passenger feedback, delays, or service quality and get instant, actionable insights.
-          </p>
+          <img src="/assets/train.png" alt="3D Train" className="w-full h-full object-contain" />
         </motion.div>
 
-        <motion.form 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          onSubmit={handleSearch}
-          className="w-full max-w-3xl mb-16 relative group"
+        <motion.div
+          animate={{ y: [0, 20, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-20 right-[15%] w-80 h-80 grayscale opacity-20 dark:opacity-30 blur-sm mix-blend-overlay -rotate-6 pointer-events-none"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-xl transition-all duration-500 group-hover:opacity-100 opacity-50" />
-          <div className="relative flex items-center bg-white dark:bg-slate-900 border-2 border-border/50 rounded-3xl shadow-xl p-2 transition-all focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10">
-            <div className="pl-4 text-muted-foreground">
-              <Search className="w-6 h-6" />
-            </div>
-            <input 
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., What are the main complaints about weekend train services?"
-              className="w-full bg-transparent border-none outline-none px-4 py-4 text-lg text-foreground placeholder:text-muted-foreground/60"
-            />
-            <button 
-              type="submit"
-              disabled={isPending || !query.trim()}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[140px] justify-center"
-            >
-              {isPending ? <Loader2 className="w-6 h-6 animate-spin" /> : "Analyze"}
-            </button>
-          </div>
-        </motion.form>
+          <img src="/assets/plane.png" alt="3D Plane" className="w-full h-full object-contain" />
+        </motion.div>
 
-        <AnimatePresence mode="wait">
-          {data && (
-            <motion.div 
-              key="results"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              className="w-full"
-            >
-              <ResultsDisplay data={data} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-md"
+          >
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Pulse Transport Network</span>
+          </motion.div>
 
-        {!data && !isPending && (
-          <motion.div 
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-7xl md:text-9xl font-display font-black tracking-tighter mb-8 leading-[0.9]"
+          >
+            Shaping the <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-pink-500">Citizen Journey</span>
+          </motion.h1>
+
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl opacity-60"
+            transition={{ delay: 0.2 }}
+            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed"
           >
-            {[
-              "How is the cleanliness on the Northern line?",
-              "Summarize feedback regarding ticket pricing.",
-              "What do passengers love about the new app?"
-            ].map((suggestion, i) => (
-              <button
-                key={i}
-                onClick={() => setQuery(suggestion)}
-                className="text-left p-4 rounded-2xl border border-border/50 hover:bg-secondary/50 transition-colors text-sm text-muted-foreground hover:text-foreground"
-              >
-                "{suggestion}"
-              </button>
-            ))}
+            Your voice is the heartbeat of our infrastructure. Real-time feedback, powered by AI, to build a more connected tomorrow.
+          </motion.p>
+        </div>
+      </section>
+
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center z-10 relative">
+
+        <div className="w-full flex justify-between items-start mb-12">
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="max-w-2xl"
+          >
+            <h2 className="text-4xl md:text-5xl font-display font-extrabold text-foreground leading-tight mb-4">
+              Intelligence <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Hub</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Explore public transport intelligence via AI-driven analytics.
+            </p>
           </motion.div>
-        )}
+
+          <motion.button
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            onClick={handleExport}
+            className="px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-border shadow-sm hover:shadow-md transition-all flex items-center gap-2 font-bold text-sm print:hidden"
+          >
+            <FileDown className="w-4 h-4" /> Export Report (PDF)
+          </motion.button>
+        </div>
+
+        <AlertBanner />
+        <KPICards />
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full space-y-12"
+        >
+          <CohortAnalysis />
+        </motion.div>
+
+        <section className="w-full mt-32 relative">
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-display font-black tracking-tight mb-4 text-slate-900 dark:text-white">Broadcast Your Voice</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Instant intelligence capture for transit authorities. Select your mode below to review.</p>
+          </div>
+          <FeedbackForm />
+        </section>
 
       </main>
     </div>

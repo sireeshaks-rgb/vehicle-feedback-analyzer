@@ -9,27 +9,50 @@ export function AdminAuth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const [role, setRole] = useState<"PASSENGER" | "ADMIN">("PASSENGER");
+  const [redirecting, setRedirecting] = useState(false);
+
   const [, setLocation] = useLocation();
   const { login, register } = useAuth();
   const { toast } = useToast();
 
-  const isPending = login.isPending || register.isPending;
+  const isPending = login.isPending || register.isPending || redirecting;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const action = isLogin ? login : register;
-    
-    action.mutate({ email, password }, {
-      onSuccess: () => {
+    const payload = isLogin ? { email, password } : { email, password, role };
+
+    action.mutate(payload as any, {
+      onSuccess: async () => {
+        setRedirecting(true);
         toast({
-          title: isLogin ? "Welcome back" : "Account created",
-          description: "Redirecting to admin dashboard...",
+          title: isLogin ? "Welcome back!" : "Account created!",
+          description: "Redirecting to your dashboard...",
         });
-        setLocation("/admin");
+        // Wait briefly for /api/auth/me to re-fetch, then redirect
+        await new Promise(r => setTimeout(r, 600));
+        // Determine redirect: try to get the token and decode role
+        const token = localStorage.getItem("auth_token");
+        if (token) {
+          try {
+            const res = await fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } });
+            if (res.ok) {
+              const user = await res.json();
+              if (user.role === "ADMIN" || user.role === "ORG_ADMIN" || user.role === "SUPER_ADMIN") {
+                setLocation("/admin");
+              } else {
+                setLocation("/passenger");
+              }
+              return;
+            }
+          } catch (_) { }
+        }
+        setLocation("/");
       },
       onError: (err) => {
+        setRedirecting(false);
         toast({
           title: "Authentication Failed",
           description: err.message,
@@ -47,15 +70,15 @@ export function AdminAuth() {
         alt="Background"
         className="absolute inset-0 w-full h-full object-cover opacity-[0.03] pointer-events-none mix-blend-luminosity"
       />
-      
-      <motion.div 
+
+      <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-md relative z-10"
       >
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 border border-border/50 overflow-hidden relative">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-accent" />
-          
+
           <div className="flex flex-col items-center mb-8 text-center">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4">
               <ShieldCheck className="w-8 h-8" />
@@ -115,6 +138,28 @@ export function AdminAuth() {
               </div>
             </div>
 
+            {!isLogin && (
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-foreground px-1">I am a...</label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setRole("PASSENGER")}
+                    className={`flex-1 py-3 rounded-xl border-2 transition-all ${role === "PASSENGER" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    Passenger
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("ADMIN")}
+                    className={`flex-1 py-3 rounded-xl border-2 transition-all ${role === "ADMIN" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    Transit Staff
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isPending}
@@ -130,9 +175,9 @@ export function AdminAuth() {
               )}
             </button>
           </form>
-          
+
           <div className="mt-8 text-center">
-            <button 
+            <button
               onClick={() => setLocation("/")}
               className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
             >

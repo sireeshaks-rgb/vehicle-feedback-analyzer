@@ -41,33 +41,33 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 224 71% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 13%;
+    --card: 224 71% 2%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 11%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 230 80% 65%;
+    --primary: 230 100% 67%;
     --primary-foreground: 222 47% 11%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 224 71% 10%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 224 71% 10%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 260 80% 65%;
+    --accent: 260 100% 70%;
     --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84% 40%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 230 80% 65%;
+    --border: 224 71% 12%;
+    --input: 224 71% 12%;
+    --ring: 230 100% 67%;
   }
 
   * {
@@ -77,13 +77,20 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    background-image: radial-gradient(circle at 50% -20%, hsl(var(--primary)/0.05), transparent 60%);
+    background-image:
+      radial-gradient(circle at 50% -20%, hsl(var(--primary)/0.12), transparent 70%),
+      radial-gradient(circle at 0% 100%, hsl(var(--accent)/0.08), transparent 50%);
     background-repeat: no-repeat;
     background-attachment: fixed;
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     @apply tracking-tight;
   }
@@ -91,10 +98,65 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-white/30 dark:bg-black/60 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_#0000001a];
   }
-  
+
   .glass-card {
-    @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none;
+    @apply bg-white/60 dark:bg-[#020617]/80 backdrop-blur-3xl border border-white/40 dark:border-white/5 shadow-2xl transition-all duration-500;
+  }
+
+  .glass-card:hover {
+    @apply shadow-primary/10 border-white/60 dark:border-white/20 -translate-y-1 scale-[1.01];
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-pink-500;
+  }
+
+  .bg-mesh {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 50% 0%, hsla(var(--primary)/0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(var(--accent)/0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(var(--primary)/0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer base {
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes float-slow {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float-slow 6s ease-in-out infinite;
   }
 }
